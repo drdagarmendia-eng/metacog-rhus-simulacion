@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Simulación interactiva completa MetaCog RHUS v0.3 — datos simulados, offline." />
+<title>MetaCog RHUS · simulación completa (offline)</title>
+<style>
+:root {
+  --bg:#f4f7f8; --bg2:#eef2f4; --card:#fff; --ink:#172126; --muted:#5a6a72;
+  --line:#d3dce0; --teal:#176b5b; --teal-dark:#0f4d42; --teal-soft:#e7f3ef;
+  --gold:#8a5708; --gold-soft:#fff5d9; --gold-border:#d99b2b; --ok:#23663f; --ok-soft:#e8f5ec;
+  --blue:#285d83; --blue-soft:#eaf2f8; --danger:#9a3c32; --danger-soft:#faece9;
+  --radius:8px; --shadow:0 3px 14px rgba(23,33,38,.07);
+  --font:"Segoe UI",system-ui,-apple-system,"Helvética Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.55;font-size:17px}
+a{color:var(--teal-dark)}
+.topbar{position:sticky;top:0;z-index:50;background:#143b3a;color:#fff;padding:14px 18px;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.topbar h1{margin:0;font-size:1.08rem;font-weight:700}
+.topbar .sub{margin:2px 0 0;font-size:.82rem;opacity:.88}
+.badge{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:4px 10px;font-size:.75rem}
+.nav{position:sticky;top:62px;z-index:45;display:flex;gap:4px;padding:0 10px;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);overflow-x:auto}
+.nav button{border:0;border-bottom:3px solid transparent;background:transparent;color:var(--muted);
+  padding:12px 10px 9px;font:inherit;font-size:.86rem;cursor:pointer;white-space:nowrap}
+.nav button:hover{color:var(--teal-dark);border-color:#9bc5bb}
+.nav button.active{color:var(--teal-dark);border-color:var(--teal);font-weight:750}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 18px 72px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.banner{background:var(--gold-soft);color:var(--gold);border:1.5px solid var(--gold-border);
+  border-radius:var(--radius);padding:10px 14px;margin:0 0 16px;font-weight:650;font-size:.94rem}
+.banner.research{background:#ecfeff;color:#155e75;border-color:#22d3ee}
+.banner.fail{background:var(--danger-soft);color:var(--danger);border-color:#e8b4ad}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;margin:0 0 16px}
+.card h2{margin:0 0 8px;font-size:1.35rem;color:var(--teal-dark)}
+.card h3{margin:16px 0 8px;font-size:1.05rem}
+.lead{color:var(--muted);margin:0 0 14px}
+.grid{display:grid;gap:14px}
+@media(min-width:720px){.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}}
+.pill{display:inline-block;background:var(--teal-soft);color:var(--teal-dark);border-radius:999px;
+  padding:3px 10px;font-size:.78rem;font-weight:700;margin:0 6px 6px 0}
+.pill.gold{background:var(--gold-soft);color:var(--gold)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.muted{background:var(--bg2);color:var(--muted)}
+.choice,.step{border:1.5px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin:8px 0;background:#fff;cursor:pointer;transition:border-color .15s,background .15s}
+.choice:hover{border-color:var(--teal);background:#f4fbf8}
+.choice.selected,.choice.ok{border-color:var(--teal);background:var(--teal-soft)}
+.meta{font-size:.86rem;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:var(--radius);
+  padding:11px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--teal-dark)}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{background:var(--bg2)}
+.note{background:#fff;border-left:4px solid var(--teal);padding:10px 12px;margin:12px 0;font-size:.92rem}
+.plain-note{border-left:4px solid var(--blue);background:var(--blue-soft);padding:12px 14px;margin:14px 0;font-size:.9rem}
+.owners{display:grid;gap:10px}
+.owners .who{background:var(--teal-soft);border-radius:var(--radius);padding:12px 14px}
+.owners strong{display:block;color:var(--teal-dark)}
+.phone{max-width:460px;margin:0 auto;border:1px solid var(--line);border-radius:24px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.phone .ph-top{background:#0f766e;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.phone .ph-body{padding:16px}
+.progress{height:8px;background:#e7e0d2;border-radius:999px;overflow:hidden;margin:8px 0 14px}
+.progress>span{display:block;height:100%;background:var(--teal);width:0%;transition:width .35s ease}
+.fb-block{border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin:10px 0;background:#fffcf5}
+.fb-block h4{margin:0 0 6px;color:var(--teal-dark);font-size:.95rem}
+.tag-internal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;background:#111827;color:#a7f3d0;padding:3px 8px;border-radius:6px}
+.workspace-head{padding:4px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.workspace-head h2{margin:0 0 6px;font-size:1.5rem;color:var(--ink)}
+.workspace-head p{margin:0;color:var(--muted);max-width:780px}
+.context{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:.84rem;color:var(--muted)}
+.context strong{color:var(--ink)}
+.metric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:15px 0;margin-bottom:22px}
+.metric{padding:0 16px;border-right:1px solid var(--line)}
+.metric:first-child{padding-left:0}
+.metric:last-child{border-right:0}
+.metric .value{display:block;font-size:1.4rem;line-height:1.15;font-weight:800}
+.metric .label{display:block;font-size:.8rem;color:var(--muted);margin-top:3px}
+.priority{border-left:5px solid var(--gold-border);background:var(--gold-soft);padding:18px 20px;margin-bottom:22px}
+.priority .eyebrow{color:var(--gold);font-size:.76rem;font-weight:800;margin-bottom:4px}
+.priority h3{margin:0 0 6px;font-size:1.22rem}
+.priority p{margin:0;max-width:900px}
+.section-block{padding:8px 0 22px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.section-block h3{margin:0 0 5px;font-size:1.14rem}
+.action-list{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.action-item{padding:16px 18px 4px 0;margin-right:18px;border-right:1px solid var(--line)}
+.action-item:last-child{border-right:0;margin-right:0}
+.action-ítem .step-no{color:var(--teal);font-size:.78rem;font-weight:800}
+.action-ítem h4{margin:3px 0 5px;font-size:.98rem}
+.action-ítem p{margin:0;color:var(--muted);font-size:.88rem}
+.status{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.72rem;font-weight:800}
+.status.priority{background:var(--danger-soft);color:var(--danger)}
+.status.reinforce{background:var(--gold-soft);color:var(--gold)}
+.status.consolidate{background:var(--ok-soft);color:var(--ok)}
+.status.observed{background:var(--teal-soft);color:var(--teal-dark)}
+.status.notobs{background:var(--bg2);color:var(--muted)}
+.matrix{display:grid;grid-template-columns:90px 1fr 1fr;gap:6px;max-width:440px;font-size:.85rem}
+.matrix .cell{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px;text-align:center}
+.matrix .head{background:var(--bg2);font-weight:700;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:.9rem;background:#fff}
+th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-size:.8rem;color:var(--muted)}
+tr.hl{background:#ecfdf5}
+tr.hl td{font-weight:600}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+.table-wrap table{min-width:720px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.flow .node{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:8px 12px;font-size:.88rem}
+.flow .arrow{color:var(--teal);font-weight:700}
+.dual-axis{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);margin:14px 0 20px}
+.dual-axis>div{padding:16px 18px}
+.dual-axis>div+div{border-left:1px solid var(--line)}
+.dual-axis .axis-label{display:block;color:var(--muted);font-size:.75rem;font-weight:800;margin-bottom:3px}
+.dual-axis strong{display:block;font-size:1rem}
+.dual-axis p{margin:5px 0 0;color:var(--muted);font-size:.86rem}
+.confidence-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.confidence-row button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.confidence-row button.active{background:var(--teal-dark);color:#fff;border-color:var(--teal-dark)}
+.step-panel{display:none}
+.step-panel.active{display:block}
+.student-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cov-grid{display:grid;gap:10px}
+@media(min-width:720px){.cov-grid{grid-template-columns:1fr 1fr}}
+.cov-card{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:#fff}
+.cov-card h4{margin:0 0 6px;font-size:.98rem}
+.strength{font-size:.78rem;font-weight:800}
+.strength.WEAK{color:#9a3c32}.strength.PARTIAL{color:#8a5708}.strength.PAIRED{color:#23663f}
+.foot{margin-top:28px;padding-top:14px;border-top:1px dashed var(--line);font-size:.85rem;color:var(--muted)}
+.segmented{display:inline-flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:10px 0 16px}
+.segmented button{border:0;border-right:1px solid var(--line);background:#fff;padding:8px 11px;color:var(--muted);cursor:pointer;font:inherit;font-size:.82rem}
+.segmented button:last-child{border-right:0}
+.segmented button.active{background:var(--teal-dark);color:#fff}
+.gate-list{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;border-top:1px solid var(--line)}
+.gate{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)}
+.gate .mark{width:18px;height:18px;border-radius:50%;background:var(--danger-soft);color:var(--danger);display:grid;place-items:center;font-size:.72rem;font-weight:800;margin-top:2px}
+.gate.ready .mark{background:var(--ok-soft);color:var(--ok)}
+.gate strong{display:block;font-size:.9rem}
+.gate small{display:block;color:var(--muted)}
+.gate .gate-status{font-size:.75rem;font-weight:800;color:var(--muted);white-space:nowrap}
+button:focus-visible,a:focus-visible{outline:3px solid #7cb6a8;outline-offset:2px}
+@media(max-width:719px){
+  body{font-size:16px}.topbar{position:static}.nav{top:0}.wrap{padding:16px 12px 48px}
+  .metric-strip{grid-template-columns:1fr 1fr;row-gap:16px}
+  .metric:nth-child(2){border-right:0}.metric:nth-child(3){padding-left:0}
+  .action-list,.dual-axis,.gate-list{grid-template-columns:1fr}
+  .dual-axis>div+div{border-left:0;border-top:1px solid var(--line)}
+  .action-item{border-right:0;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .action-item:last-child{border-bottom:0}
+}
+@media print{
+  .nav,.topbar .badge,.no-print{display:none!important}
+  .panel{display:block!important;page-break-inside:avoid;margin-bottom:24px}
+  body{background:#fff;font-size:11.5pt}
+  .card,.phone{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <h1>MetaCog · RHUS · simulación completa</h1>
+    <p class="sub">Modelo dual CT-* ≠ META-* · v0.3 · datos de ejemplo</p>
+  </div>
+  <span class="badge">Offline · consent-v0.1 · example:true</span>
+</header>
+<nav class="nav no-print" aria-label="Secciones" role="tablist">
+  <button type="button" class="active" data-tab="inicio" role="tab" aria-selected="true">Inicio</button>
+  <button type="button" data-tab="estudiante" role="tab" aria-selected="false">Estudiante (interactivo)</button>
+  <button type="button" data-tab="traduce" role="tab" aria-selected="false">Cómo se traduce</button>
+  <button type="button" data-tab="docencia" role="tab" aria-selected="false">Docencia</button>
+  <button type="button" data-tab="perfil" role="tab" aria-selected="false">Perfil META</button>
+  <button type="button" data-tab="invest" role="tab" aria-selected="false">Investigación</button>
+  <button type="button" data-tab="cierre" role="tab" aria-selected="false">Cierre</button>
+</nav>
+<main class="wrap">
+
+<section id="inicio" class="panel active" role="tabpanel">
+  <div class="banner">Datos simulados · no son alumnos reales · example:true · fail-closed</div>
+  <div class="card">
+    <span class="pill">Iniciativa RHUS</span>
+    <span class="pill gold">MetaCog · no es nota de cursada</span>
+    <span class="pill ok">consent-v0.1 · 3 meses</span>
+    <h2>Qué muestra esta simulación</h2>
+    <p class="lead">MetaCog es un piloto de <strong>metacognición</strong> para la comunidad de ciencias de la salud: mira como pensás (confianza, qué te falta, cómo ajustás una idea), no solo qué respondiste. No evalúa una materia ni genera ranking.</p>
+    <p>Esta simulación offline recorre una pasada T1 (año 1) del caso <span class="mono">T1_FEBRILE_TRANSMISSIBLE</span> v0.1, muestra como cada gesto se traduce a eventos con dos ejes (<strong>CT-*</strong> contenido ≠ <strong>META-*</strong> metacognición), y calcula Docencia, Perfil META e Investigación desde <strong>una sola fuente de datos</strong>.</p>
+    <div class="owners" style="margin-top:14px">
+      <div class="who"><strong>Dra. Estela Pereyra</strong> Profesora Adjunta del espacio Bases Para el Diagnóstico · co-titular del enfoque pedagógico del piloto.</div>
+      <div class="who"><strong>Dr. Daniel Garmendia</strong> Dueño y CEO de <strong>Killa Kunan System AI</strong> · co-titular técnico-productivo de MetaCog.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Vistas de la simulación</h3>
+    <ol>
+      <li><strong>Estudiante (interactivo)</strong> — consentimiento, previo, ítems 1–3 + confianza, perturbación/revisión y devolución de 5 bloques para seudónimo <span class="mono">p_0007</span> (alias Ana).</li>
+      <li><strong>Cómo se traduce</strong> — gesto → evento → CT + evidencia META candidata (WEAK / PARTIAL / PAIRED).</li>
+      <li><strong>Docencia</strong> — dashboard estilo Corte B, prioridad formativa y vinculo a evidencia.</li>
+      <li><strong>Perfil META</strong> — mapa de cobertura (no suma de 7) con estados NOT_OBSERVED | INITIAL_EVIDENCE | REPEATED_EVIDENCE | NOT_COMPARABLE.</li>
+      <li><strong>Investigación</strong> — tabla + CSV Blob con <span class="mono">example:true</span>.</li>
+      <li><strong>Cierre</strong> — takeaways e impresion.</li>
+    </ol>
+    <div class="note"><strong>Consentimiento (consent-v0.1):</strong> retención maxima de <strong>3 meses</strong>. Se guarda id anónimo de sesión, alias opciónal, respuestas, confianza y versión del consentimiento. <strong>Sin DNI, correo, legajo ni Cerberus.</strong></div>
+    <div class="plain-note"><strong>Fail-closed:</strong> con n&lt;3 no se inventa tendencia; CT acertado ≠ nivel META; sin ranking ni puntaje global de las siete competencias.</div>
+    <p style="margin-top:14px"><button type="button" class="btn btn-primary" data-jump="estudiante">Empezar pasada de Ana (p_0007)</button>
+    <button type="button" class="btn btn-ghost" data-jump="docencia" style="margin-left:8px">Ver Docencia</button></p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Modelo de dos ejes (v0.3)</h3>
+    <div class="dual-axis">
+      <div><span class="axis-label">EJE 1 · CONTENIDO (CT-*)</span><strong>Sobre que razona</strong><p>CT-INFO · CT-CAUSAL · CT-ALT. Un acierto en contenido no demuestra competencia metacognitiva.</p></div>
+      <div><span class="axis-label">EJE 2 · METACOGNICION (META-*)</span><strong>Como regula el razonamiento</strong><p>META-KB · PL · MO · CA · ST · AD · EV. Solo evidencia candidata segun reglas.</p></div>
+    </div>
+    <p class="meta">Familia de caso: T1_FEBRILE_TRANSMISSIBLE v0.1 · preclinical año 1 · sesión MED-demo · blueprint 0.3-draft.</p>
+  </div>
+</section>
+
+<section id="estudiante" class="panel" role="tabpanel">
+  <div class="banner">Vista alumno · pasada simulada · seudónimo p_0007 · alias Ana · no es un alumno real</div>
+  <div class="card">
+    <h2>Estudiante · pasada T1 (año 1) interactiva</h2>
+    <p class="lead">Patrón preclinical: fiebre después de una vacuna + afirmación causal de una compañera. Andá paso a paso; el progreso alimenta el mismo DATA que Docencia, Perfil META e Investigación.</p>
+    <p><span class="pill">Seudónimo p_0007</span><span class="pill gold">Alias: Ana</span><span class="pill ok">consent-v0.1</span><span class="pill muted" id="stu-status">Paso 0/6</span></p>
+  </div>
+  <div class="phone" id="student-phone">
+    <div class="ph-top"><strong>MetaCog</strong><span style="font-size:.8rem;opacity:.9">Sesión MED-demo</span></div>
+    <div class="ph-body">
+      <div class="progress" aria-label="Progreso"><span id="stu-progress"></span></div>
+      <p class="meta" id="stu-step-label">Paso · consentimiento</p>
+
+      <div class="step-panel active" data-step="0">
+        <h3 style="margin:4px 0 8px;font-size:1.1rem">Antes de empezar</h3>
+        <p style="font-size:.92rem">MetaCog mira como pensás (confianza, qué te falta, cómo ajustás una idea), no solo qué respondiste. <strong>No es una nota de cursada</strong> y no evalúa una materia.</p>
+        <div class="note" style="font-size:.88rem">Retencion: guardamos los datos de la sesión como máximo <strong>3 meses</strong> (consent-v0.1). Después se borran o se anonimizan.</div>
+        <p class="meta">Se guarda: id anónimo, código de sesión, alias opciónal, respuestas, confianza, versión del consentimiento. <strong>Sin DNI, correo, legajo ni Cerberus.</strong></p>
+        <div class="choice" id="consent-choice" role="button" tabindex="0" aria-pressed="false">☐ Acepto participar en estas condiciones (demo)</div>
+        <div class="student-actions"><button type="button" class="btn btn-primary" id="btn-consent-next" disabled>Continuar</button></div>
+      </div>
+
+      <div class="step-panel" data-step="1">
+        <h3 style="font-size:1.05rem">Previo · qué das por sabido</h3>
+        <p style="font-size:.92rem">En una actividad de la facultad, una estudiante de 19 años tuvo fiebre y malestar durante un día, después de una vacuna. Una compañera dice: «si hubo fiebre, la vacuna le provocó la enfermedad». Tu tarea no es diagnosticar ni indicar un tratamiento: es ver que información hace falta para evaluar esa afirmación.</p>
+        <div class="choice prior-opt" data-prior="a">○ Ya alcanza para afirmar una sola causa</div>
+        <div class="choice prior-opt" data-prior="b">○ Hay que indicar tratamiento ya</div>
+        <div class="choice prior-opt" data-prior="c">○ Con estos datos incompletos, la fiebre podría tener más de una causa</div>
+        <p class="meta">Marcá la tercera opción (múltiples causas) — es el camino del ejemplo.</p>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-prior-next" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <div class="step-panel" data-step="2">
+        <div class="meta">Pregunta 1 · CT-CAUSAL · legado MC06</div>
+        <h3 style="font-size:1.05rem;margin:4px 0 8px">Qué falta saber</h3>
+        <p style="font-size:.92rem">Una compañera dice que, como hubo fiebre después de la vacuna, la vacuna provocó «la enfermedad». ¿Qué es lo más sólido para evaluar esa afirmación?</p>
+        <div class="choice item-opt" data-item="1" data-key="a">○ Alcanza: la secuencia temporal basta para afirmar la causa</div>
+        <div class="choice item-opt" data-item="1" data-key="b">○ Hace falta mas información: que la fiebre haya venido después no prueba la causa</div>
+        <div class="choice item-opt" data-item="1" data-key="c">○ Hay que indicar tratamiento de inmediato</div>
+        <div class="choice item-opt" data-item="1" data-key="d">○ Solo importa si la vacuna era nueva</div>
+        <p class="meta" style="margin-top:10px">¿Cuánta confianza tenés en tu respuesta?</p>
+        <div class="confidence-row" data-conf="1">
+          <button type="button" data-val="40">40%</button>
+          <button type="button" data-val="50">50%</button>
+          <button type="button" data-val="60">60%</button>
+          <button type="button" data-val="70" class="active">70%</button>
+          <button type="button" data-val="80">80%</button>
+          <button type="button" data-val="90">90%</button>
+        </div>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-item1-next" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <div class="step-panel" data-step="3">
+        <div class="meta">Pregunta 2 · CT-INFO · legado MC05</div>
+        <h3 style="font-size:1.05rem;margin:4px 0 8px">Datos necesarios</h3>
+        <p style="font-size:.92rem">Para evaluar esa afirmación, ¿qué te haría más falta saber primero?</p>
+        <div class="choice item-opt" data-item="2" data-key="a">○ Solo el color del frasco de la vacuna</div>
+        <div class="choice item-opt" data-item="2" data-key="b">○ Si la fiebre vino después, y cómo les fue a otras personas que recibieron la misma vacuna</div>
+        <div class="choice item-opt" data-item="2" data-key="c">○ La opinion de más compañeras en el grupo</div>
+        <div class="choice item-opt" data-item="2" data-key="d">○ Nada: ya esta todo claro</div>
+        <p class="meta" style="margin-top:10px">Confianza</p>
+        <div class="confidence-row" data-conf="2">
+          <button type="button" data-val="40">40%</button>
+          <button type="button" data-val="50">50%</button>
+          <button type="button" data-val="60">60%</button>
+          <button type="button" data-val="65" class="active">65%</button>
+          <button type="button" data-val="75">75%</button>
+          <button type="button" data-val="85">85%</button>
+        </div>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-item2-next" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <div class="step-panel" data-step="4">
+        <div class="meta">Pregunta 3 · CT-ALT · legado MC08</div>
+        <h3 style="font-size:1.05rem;margin:4px 0 8px">Explicaciones alternativas</h3>
+        <p style="font-size:.92rem">Mas adelante: fiebre después de empezar un medicamento, con datos incompletos. ¿Qué riesgo hay si te quedás con una sola causa?</p>
+        <div class="choice item-opt" data-item="3" data-key="a">○ Ninguno: una sola causa siempre alcanza</div>
+        <div class="choice item-opt" data-item="3" data-key="b">○ Podés dejar afuera otras explicaciones sin evidencia que las separe</div>
+        <div class="choice item-opt" data-item="3" data-key="c">○ Solo importa la marca del medicamento</div>
+        <div class="choice item-opt" data-item="3" data-key="d">○ Hay que suspender toda medicacion siempre</div>
+        <p class="meta" style="margin-top:10px">Confianza</p>
+        <div class="confidence-row" data-conf="3">
+          <button type="button" data-val="40">40%</button>
+          <button type="button" data-val="50">50%</button>
+          <button type="button" data-val="60" class="active">60%</button>
+          <button type="button" data-val="70">70%</button>
+          <button type="button" data-val="80">80%</button>
+          <button type="button" data-val="90">90%</button>
+        </div>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-item3-next" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <div class="step-panel" data-step="5">
+        <h3 style="font-size:1.05rem">Perturbación · revisión</h3>
+        <p style="font-size:.92rem;margin:0 0 8px"><strong>Dato nuevo:</strong> la estudiante se recuperó sin tratamiento. Otras personas que recibieron la misma vacuna no tuvieron síntomas.</p>
+        <p class="meta">¿Que hacés con tu postura? (lenguaje llano — el enum interno no se muestra al alumno)</p>
+        <div class="choice rev-opt" data-rev="MODIFY" data-ui="La modifico">○ La modifico</div>
+        <div class="choice rev-opt" data-rev="MAINTAIN" data-ui="La mantengo">○ La mantengo</div>
+        <div class="choice rev-opt" data-rev="SUSPEND" data-ui="La dejo en suspenso">○ La dejo en suspenso</div>
+        <label class="meta" for="rev-note" style="display:block;margin-top:10px">Nota breve (opciónal)</label>
+        <textarea id="rev-note" rows="3" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:var(--radius);resize:vertical">Si otras vacunadas no tuvieron síntomas y ella se recuperó sola, la afirmación causal queda más débil; hace falta orden en el tiempo y no confundir secuencia con causa.</textarea>
+        <div class="note" id="staff-note" style="display:none">Interno (staff / investigación — <em>el alumno no ve este enum</em>): <span class="tag-internal" id="staff-enum">—</span></div>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" id="btn-rev-next" disabled>Ver devolución</button>
+        </div>
+      </div>
+
+      <div class="step-panel" data-step="6">
+        <h3 style="font-size:1.05rem">Devolución · 5 bloques</h3>
+        <div class="fb-block"><h4>1. Tu recorrido</h4><p style="margin:0;font-size:.9rem" id="fb-1">—</p></div>
+        <div class="fb-block"><h4>2. Lo que hiciste bien</h4><p style="margin:0;font-size:.9rem" id="fb-2">—</p></div>
+        <div class="fb-block"><h4>3. Punto para revisar</h4><p style="margin:0;font-size:.9rem" id="fb-3">—</p></div>
+        <div class="fb-block"><h4>4. Conocimiento pendiente</h4><p style="margin:0;font-size:.9rem" id="fb-4">—</p></div>
+        <div class="fb-block"><h4>5. Próxima acción</h4><p style="margin:0;font-size:.9rem" id="fb-5">—</p></div>
+        <div class="note" id="fb-n">Contador de evidencia (ejemplo): n = 1 observación en varias competencias. <strong>Aún no hay suficientes casos para estimar tendencia</strong> (umbral piloto: n&lt;3).</div>
+        <p class="meta">Cuatro lecturas aparte (no se suman): la respuesta · como pensáste · certeza vs aciertos · sistema.</p>
+        <div class="student-actions">
+          <button type="button" class="btn btn-ghost" data-stu-back>Atrás</button>
+          <button type="button" class="btn btn-primary" data-jump="traduce">Ver cómo se traduce</button>
+          <button type="button" class="btn btn-ghost" id="btn-reset-student">Reiniciar pasada</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="traduce" class="panel" role="tabpanel">
+  <div class="banner">Puente conceptual · datos de ejemplo · CT acierto ≠ nivel META</div>
+  <div class="card">
+    <h2>Cómo se traduce</h2>
+    <p class="lead">Cada gesto del estudiante genera eventos. El contenido (CT-*) y la evidencia metacognitiva candidata (META-*) viajan juntos, pero no se confunden.</p>
+    <div class="flow">
+      <div class="node">Gesto alumno<br><span class="meta">elige / confianza / revisa</span></div>
+      <div class="arrow">→</div>
+      <div class="node">Eventos<br><span class="meta">ITEM_RESPONSE · REVISION</span></div>
+      <div class="arrow">→</div>
+      <div class="node">CT target<br><span class="meta">INFO · CAUSAL · ALT</span></div>
+      <div class="arrow">→</div>
+      <div class="node">META candidata<br><span class="meta">WEAK · PARTIAL · PAIRED</span></div>
+      <div class="arrow">→</div>
+      <div class="node">Docencia / Perfil / CSV<br><span class="meta">misma fuente DATA</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Mapa ítem → CT + META (blueprint 0.3)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Acción del estudiante</th><th>Evento</th><th>CT target</th><th>META candidata · fuerza</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>Ítem 1 · opción B + confianza</td><td><span class="mono">ITEM_RESPONSE</span> item-1</td><td>CT-CAUSAL<br><span class="meta">legado MC06</span></td><td>META-MO <span class="strength WEAK">WEAK</span><br>META-CA <span class="strength PAIRED">PAIRED</span></td><td>Acierto CT ≠ nivel META-MO</td></tr>
+          <tr><td>Ítem 2 · opción B + confianza</td><td><span class="mono">ITEM_RESPONSE</span> item-2</td><td>CT-INFO<br><span class="meta">legado MC05</span></td><td>META-KB <span class="strength WEAK">WEAK</span><br>META-PL <span class="strength WEAK">WEAK</span><br>META-CA <span class="strength PAIRED">PAIRED</span></td><td>Sin plan probe → PL débil</td></tr>
+          <tr class="hl"><td>Ítem 3 · opción B + confianza</td><td><span class="mono">ITEM_RESPONSE</span> item-3</td><td>CT-ALT<br><span class="meta">legado MC08</span></td><td>META-MO <span class="strength WEAK">WEAK</span><br>META-CA <span class="strength PAIRED">PAIRED</span></td><td>Sin justificación completa</td></tr>
+          <tr><td>Revisión «La modifico»</td><td><span class="mono">REVISION_EVENT</span></td><td>CT-CAUSAL</td><td>META-AD <span class="strength PARTIAL">PARTIAL</span></td><td>Sin post-respuesta → parcial<br>Staff: <span class="tag-internal">ADAPTIVE_CHANGE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">Fuerzas: <strong>WEAK</strong> = observación sin probe/justificación requerida · <strong>PARTIAL</strong> = acción sin post-medida completa · <strong>PAIRED</strong> = par respuesta–confianza usable para calibración (aún dentro de un solo caso = INITIAL).</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Traduccion en vivo (sesión de Ana)</h3>
+    <p class="lead">Se actualiza con lo que elegiste en la pasada interactiva (o con los defaults del ejemplo si aún no la completaste).</p>
+    <div class="table-wrap"><table><thead><tr><th>Gesto UI</th><th>Campo</th><th>CT</th><th>META claims</th></tr></thead><tbody id="live-bridge"></tbody></table></div>
+  </div>
+</section>
+
+<section id="docencia" class="panel" role="tabpanel">
+  <div class="banner">Demostracion con datos simulados · indicadores recalculados desde DATA embebido</div>
+  <header class="workspace-head">
+    <h2>Docencia · Corte B</h2>
+    <p>Lectura agregada de la sesión: qué patrón merece atención, qué evidencia lo sostiene y que intervención breve puede probarse.</p>
+    <div class="context">
+      <span><strong>Sesión:</strong> MED-demo</span>
+      <span><strong>Caso:</strong> T1 · afirmación causal</span>
+      <span><strong>Nivel:</strong> año 1</span>
+      <span><strong>Confianza alta:</strong> ≥70%</span>
+    </div>
+  </header>
+  <div class="metric-strip" aria-label="Resumen de la sesión">
+    <div class="metric"><span class="value" id="m-students">—</span><span class="label">estudiantes con evidencia</span></div>
+    <div class="metric"><span class="value" id="m-observations">—</span><span class="label">respuestas observadas</span></div>
+    <div class="metric"><span class="value" id="m-accuracy">—</span><span class="label">aciertos descriptivos</span></div>
+    <div class="metric"><span class="value" id="m-risk">—</span><span class="label">errores con confianza alta</span></div>
+  </div>
+  <div class="priority" aria-live="polite">
+    <div class="eyebrow">PRIORIDAD FORMATIVA DEL DEMO</div>
+    <h3 id="priority-title">Cargando señal…</h3>
+    <p id="priority-copy"></p>
+    <p style="margin-top:10px"><a href="#invest" data-jump="invest">Ver evidencia en Investigación →</a></p>
+  </div>
+  <section class="section-block">
+    <h3>Cadena formativa prioritaria</h3>
+    <div class="action-list">
+      <div class="action-item"><span class="step-no">ANTES · 3 MIN</span><h4>Activar la explicación</h4><p>Presentar una secuencia temporal y pedir: «¿qué sabemos, qué inferimos y qué falta?».</p></div>
+      <div class="action-item"><span class="step-no">DURANTE · 8 MIN</span><h4>Contrastar dos hipótesis</h4><p>Agregar un dato que apoye y otro que debilite la causa. Exigir evidencia para mantener, cambiar o suspender.</p></div>
+      <div class="action-item"><span class="step-no">DESPUES · 4 MIN</span><h4>Verificar transferencia</h4><p>Usar un caso paralelo. Comparar error con confianza alta y calidad de la justificación, no solo acierto.</p></div>
+    </div>
+    <div class="plain-note"><strong>Criterio de mejora:</strong> en la siguiente actividad, buscar menos errores con confianza alta y mas justificaciónes que separen temporalidad, causalidad y explicaciones alternativas.</div>
+  </section>
+  <section class="section-block">
+    <h3>Dimensiónes del caso (CT + META candidata)</h3>
+    <div class="segmented" role="group" aria-label="Filtrar">
+      <button type="button" class="active" data-dimensión-filter="all">Todas</button>
+      <button type="button" data-dimensión-filter="priority">Con señal prioritaria</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Dimensión</th><th>Evidencia</th><th>Lectura prudente</th><th>Uso docente</th></tr></thead><tbody id="teacher-dimensións"></tbody></table></div>
+  </section>
+  <div class="grid grid-2">
+    <section class="section-block" style="border:0;margin:0;padding:0">
+      <h3>Calibración · certeza vs acierto</h3>
+      <div class="matrix" style="margin-top:12px">
+        <div class="cell head"></div><div class="cell head">Confianza alta</div><div class="cell head">Confianza baja</div>
+        <div class="cell head">Acierto</div><div class="cell"><strong id="cal-ah">—</strong><br><span class="meta">consolidar</span></div><div class="cell"><strong id="cal-al">—</strong><br><span class="meta">dar seguridad</span></div>
+        <div class="cell head">Error</div><div class="cell"><strong id="cal-eh">—</strong><br><span class="meta">prioridad conceptual</span></div><div class="cell"><strong id="cal-el">—</strong><br><span class="meta">andamiaje</span></div>
+      </div>
+    </section>
+    <section class="section-block" style="border:0;margin:0;padding:0">
+      <h3>Patrónes de revisión</h3>
+      <div id="revisión-summary" style="margin-top:12px"></div>
+    </section>
+  </div>
+  <section class="section-block">
+    <h3>Qué no concluye esta pantalla</h3>
+    <p class="lead">No muestra rendimiento académico global, no clasifica estudiantes, no demuestra tendencia con una sola sesión y no reemplaza la revisión de respuestas. Toda decisión debe contrastarse con más casos.</p>
+  </section>
+</section>
+
+<section id="perfil" class="panel" role="tabpanel">
+  <div class="banner fail">Fail-closed · una sesión · n&lt;3 · no hay suma de 7 · no hay nivel global META</div>
+  <header class="workspace-head">
+    <h2>Perfil META · mapa de cobertura</h2>
+    <p>Calculado desde la sesión simulada (y desde lo que Ana eligio si completo la pasada). Describe cobertura de evidencia, no dominio de competencia.</p>
+    <div class="context">
+      <span><strong>Sujeto:</strong> p_0007</span>
+      <span><strong>Casos comparables:</strong> 1</span>
+      <span><strong>Regla:</strong> n&lt;3 o un solo caso → INITIAL_EVIDENCE</span>
+    </div>
+  </header>
+  <div class="metric-strip">
+    <div class="metric"><span class="value" id="p-observed">—</span><span class="label">competencias con alguna evidencia</span></div>
+    <div class="metric"><span class="value" id="p-notobs">—</span><span class="label">aún no observadas</span></div>
+    <div class="metric"><span class="value">1</span><span class="label">casos en el perfil</span></div>
+    <div class="metric"><span class="value">No</span><span class="label">tendencia estimable</span></div>
+  </div>
+  <div class="note">Estados: <strong>NOT_OBSERVED</strong> · <strong>INITIAL_EVIDENCE</strong> (1–2 obs. o varias en un solo caso) · <strong>REPEATED_EVIDENCE</strong> (≥3 en ≥2 casos) · <strong>NOT_COMPARABLE</strong>. Umbrales provisionales de visualización, no estándares psicométricos.</div>
+  <div class="cov-grid" id="meta-coverage"></div>
+  <section class="section-block" style="margin-top:22px">
+    <h3>Hipótesis / estrategias solo si hay evidencia</h3>
+    <p class="lead">Si el estado es NOT_OBSERVED, no se formula hipótesis ni se propone estrategia sobre esa competencia.</p>
+    <div class="table-wrap"><table><thead><tr><th>Competencia</th><th>Estado</th><th>Hipótesis / siguiente paso</th></tr></thead><tbody id="meta-hypotheses"></tbody></table></div>
+  </section>
+  <section class="section-block">
+    <h3>Puertas antes de mostrar evolución</h3>
+    <div class="gate-list">
+      <div class="gate"><span class="mark">!</span><div><strong>Vinculación autorizada</strong><small>ID longitudinal solo via servicio institucional.</small></div><span class="gate-status">PENDIENTE</span></div>
+      <div class="gate ready"><span class="mark">✓</span><div><strong>Blueprint versiónado</strong><small>v0.3 preliminar con dos ejes.</small></div><span class="gate-status">BORRADOR</span></div>
+      <div class="gate"><span class="mark">!</span><div><strong>Tres momentos comparables</strong><small>Una sesión no estima direccion.</small></div><span class="gate-status">1/3</span></div>
+      <div class="gate"><span class="mark">!</span><div><strong>Score reproducible</strong><small>Regla 0–4 aun en especificación.</small></div><span class="gate-status">PENDIENTE</span></div>
+      <div class="gate"><span class="mark">!</span><div><strong>Medicion pre/post</strong><small>Legado: acción de revisión sin respuesta/confianza posteriores.</small></div><span class="gate-status">NO CAPTURADA</span></div>
+      <div class="gate ready"><span class="mark">✓</span><div><strong>Eventos separados</strong><small>ITEM_RESPONSE ≠ REVISION_EVENT.</small></div><span class="gate-status">LISTO</span></div>
+    </div>
+  </section>
+</section>
+
+<section id="invest" class="panel" role="tabpanel">
+  <div class="banner research">Vista de investigación · seudónimos de ejemplo · example:true · sin epidemiología inventada</div>
+  <header class="workspace-head">
+    <h2>Investigación · export auditable</h2>
+    <p>Tabla y CSV salen del mismo objeto DATA. Se destacan filas de <span class="mono">p_0007</span>. Columnas CT + META candidata.</p>
+  </header>
+  <div class="metric-strip">
+    <div class="metric"><span class="value" id="r-rows">—</span><span class="label">filas (respuestas + revisiónes)</span></div>
+    <div class="metric"><span class="value" id="r-students">—</span><span class="label">seudónimos únicos</span></div>
+    <div class="metric"><span class="value" id="r-ct">—</span><span class="label">targets CT distintos</span></div>
+    <div class="metric"><span class="value" id="r-meta">—</span><span class="label">META con evidencia candidata</span></div>
+  </div>
+  <p class="no-print"><button type="button" class="btn btn-primary" id="btn-csv">Descargar CSV (example:true)</button>
+  <button type="button" class="btn btn-ghost" data-jump="perfil" style="margin-left:8px">Ver Perfil META</button></p>
+  <div class="table-wrap" style="margin-top:12px">
+    <table>
+      <thead><tr><th>example</th><th>Seudónimo</th><th>Ítem / rev</th><th>CT</th><th>META candidata</th><th>choice</th><th>correct</th><th>conf</th><th>revisión</th><th>note</th></tr></thead>
+      <tbody id="research-body"></tbody>
+    </table>
+  </div>
+  <div class="plain-note" style="margin-top:16px"><strong>Límites:</strong> estos números son ejemplo simulado. No estiman prevalencias ni efectos educativos. Observaciones de una misma persona no son independientes. Antes de un estudio real: protocolo, ética, catálogo validado y plan analítico.</div>
+</section>
+
+<section id="cierre" class="panel" role="tabpanel">
+  <div class="banner">Cierre institucional · pack offline RHUS · MetaCog</div>
+  <div class="card">
+    <h2>Cierre · takeaways</h2>
+    <ul>
+      <li><strong>CT-* ≠ META-*:</strong> acertar un ítem de causalidad no demuestra monitoreo ni calibración; solo evidencia candidata.</li>
+      <li><strong>Fail-closed:</strong> con n&lt;3 o un solo caso no se inventa tendencia; el perfil queda en INITIAL_EVIDENCE o NOT_OBSERVED.</li>
+      <li><strong>Sin suma de 7:</strong> el perfil es mapa de cobertura, no un puntaje global META.</li>
+      <li><strong>Alumno en lenguaje llano;</strong> enums como <span class="tag-internal">ADAPTIVE_CHANGE</span> viven en staff/investigación.</li>
+      <li><strong>Sin PII ni ranking:</strong> seudónimos, sin DNI/correo/legajo, sin Cerberus, sin mezcla PHI.</li>
+      <li><strong>Una sola fuente DATA</strong> alimenta Docencia, Perfil META, tabla y CSV.</li>
+      <li><strong>Consent-v0.1:</strong> retención 3 meses; eliminación anticipada posible.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Encaje RHUS</h3>
+    <p>Consultora <strong>RHUS</strong> (educación y salud) impulsa capacidades de la comunidad de ciencias de la salud y posiciona al capital humano como <strong>activo estratégico</strong>. MetaCog aporta un piloto de metacognición alineado a ese marco.</p>
+    <div class="owners" style="margin-top:12px">
+      <div class="who"><strong>Dra. Estela Pereyra</strong> Profesora Adjunta · Bases Para el Diagnóstico</div>
+      <div class="who"><strong>Dr. Daniel Garmendia</strong> Dueño y CEO · Killa Kunan System AI</div>
+    </div>
+    <p style="margin-top:16px" class="no-print">
+      <button type="button" class="btn btn-primary" id="btn-print">Imprimir / guardar PDF</button>
+      <button type="button" class="btn btn-ghost" data-jump="inicio" style="margin-left:8px">Volver a Inicio</button>
+    </p>
+  </div>
+  <p class="foot">MetaCog · simulación completa offline RHUS · consent-v0.1 · T1_FEBRILE_TRANSMISSIBLE v0.1 · blueprint 0.3-draft · todos los números son ejemplo · no sustituye autorización ética para datos reales.</p>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+const ITEM_MAP = {
+  "item-1":{ct:"CT-CAUSAL",legacy:"MC06",meta:["META-MO","META-CA"],claims:{"META-MO":"WEAK","META-CA":"PAIRED"},key:"b"},
+  "item-2":{ct:"CT-INFO",legacy:"MC05",meta:["META-KB","META-PL","META-CA"],claims:{"META-KB":"WEAK","META-PL":"WEAK","META-CA":"PAIRED"},key:"b"},
+  "item-3":{ct:"CT-ALT",legacy:"MC08",meta:["META-MO","META-CA"],claims:{"META-MO":"WEAK","META-CA":"PAIRED"},key:"b"}
+};
+
+const META_DICT = {
+  "META-KB":{name:"Reconocimiento de límites del propio conocimiento",short:"Límites del conocimiento"},
+  "META-PL":{name:"Planificación del abordaje",short:"Planificación"},
+  "META-MO":{name:"Monitoreo del razonamiento",short:"Monitoreo"},
+  "META-CA":{name:"Calibración de confianza",short:"Calibración"},
+  "META-ST":{name:"Selección condicional de estrategias",short:"Estrategias"},
+  "META-AD":{name:"Revisión adaptativa ante nueva evidencia",short:"Adaptacion"},
+  "META-EV":{name:"Evaluación y transferencia del aprendizaje",short:"Evaluación / transferencia"}
+};
+
+const DIMENSIONS = {
+  MC06:{name:"Temporalidad y causalidad",content:"CT-CAUSAL",meta:["META-MO","META-CA"],action:"Contrastar secuencia temporal vs atribucion causal con un dato que debilite la causa."},
+  MC05:{name:"Datos necesarios para evaluar una afirmación",content:"CT-INFO",meta:["META-KB","META-PL","META-CA"],action:"Pedir que nombre el dato faltante y explique como lo usaria."},
+  MC08:{name:"Explicaciones alternativas",content:"CT-ALT",meta:["META-MO","META-CA"],action:"Forzar dos hipótesis abiertas hasta evidencia discriminativa."}
+};
+
+const REV_LABELS = {
+  ADAPTIVE_CHANGE:"Cambio adaptativo",
+  RIGID_MAINTENANCE:"Mantenimiento rigido",
+  APPROPRIATE_SUSPENSION:"Suspension apropiada",
+  UNJUSTIFIED_CHANGE:"Cambio no justificado",
+  JUSTIFIED_MAINTENANCE:"Mantenimiento justificado",
+  UNINTERPRETABLE:"No interpretable"
+};
+
+function row(o){ return Object.assign({example:true,session_code:"MED-demo",case_family:"T1_FEBRILE_TRANSMISSIBLE",year_band:1,note:"simulated"}, o); }
+
+const DATA = [
+  row({student_pseudonym_id:"p_0007",item_id:"item-1",choice_key:"b",correct:true,confidence:70,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0007",item_id:"item-2",choice_key:"b",correct:true,confidence:65,revision_ui:"",revision_class:"",revision_action:"",competency_id:"MC05",content_target_id:"CT-INFO",metacognitive_competency_ids:"META-KB|META-PL|META-CA",metacognitive_evidence_claims:"META-KB:WEAK|META-PL:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0007",item_id:"item-3",choice_key:"b",correct:true,confidence:60,revision_ui:"",revision_class:"",revision_action:"",competency_id:"MC08",content_target_id:"CT-ALT",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0007",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0003",item_id:"item-1",choice_key:"a",correct:false,confidence:85,revision_ui:"La mantengo",revision_class:"RIGID_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:1,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0003",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La mantengo",revision_class:"RIGID_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0011",item_id:"item-1",choice_key:"b",correct:true,confidence:55,revision_ui:"La dejo en suspenso",revision_class:"APPROPRIATE_SUSPENSION",revision_action:"SUSPEND",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:2,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0011",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La dejo en suspenso",revision_class:"APPROPRIATE_SUSPENSION",revision_action:"SUSPEND",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:2,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0014",item_id:"item-2",choice_key:"b",correct:true,confidence:75,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"MC05",content_target_id:"CT-INFO",metacognitive_competency_ids:"META-KB|META-PL|META-CA",metacognitive_evidence_claims:"META-KB:WEAK|META-PL:WEAK|META-CA:PAIRED",score_0_4:4,n_obs:2,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0014",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:2,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0018",item_id:"item-1",choice_key:"c",correct:false,confidence:90,revision_ui:"La modifico",revision_class:"UNJUSTIFIED_CHANGE",revision_action:"MODIFY",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:1,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0018",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"UNJUSTIFIED_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0021",item_id:"item-3",choice_key:"b",correct:true,confidence:50,revision_ui:"La mantengo",revision_class:"JUSTIFIED_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"MC08",content_target_id:"CT-ALT",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0021",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La mantengo",revision_class:"JUSTIFIED_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0025",item_id:"item-2",choice_key:"d",correct:false,confidence:40,revision_ui:"La dejo en suspenso",revision_class:"UNINTERPRETABLE",revision_action:"SUSPEND",competency_id:"MC05",content_target_id:"CT-INFO",metacognitive_competency_ids:"META-KB|META-PL|META-CA",metacognitive_evidence_claims:"META-KB:WEAK|META-PL:WEAK|META-CA:PAIRED",score_0_4:2,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0025",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La dejo en suspenso",revision_class:"UNINTERPRETABLE",revision_action:"SUSPEND",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0029",item_id:"item-1",choice_key:"b",correct:true,confidence:80,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0029",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0032",item_id:"item-3",choice_key:"a",correct:false,confidence:70,revision_ui:"La mantengo",revision_class:"RIGID_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"MC08",content_target_id:"CT-ALT",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:1,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0032",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La mantengo",revision_class:"RIGID_MAINTENANCE",revision_action:"MAINTAIN",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"}),
+  row({student_pseudonym_id:"p_0036",item_id:"item-2",choice_key:"b",correct:true,confidence:60,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"MC05",content_target_id:"CT-INFO",metacognitive_competency_ids:"META-KB|META-PL|META-CA",metacognitive_evidence_claims:"META-KB:WEAK|META-PL:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+  row({student_pseudonym_id:"p_0036",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"})
+];
+
+const session = {
+  step:0, consent:false, prior:null,
+  items:{1:{key:null,conf:70},2:{key:null,conf:65},3:{key:null,conf:60}},
+  revisión:null, revisionUi:null, note:"", completed:false
+};
+const STEP_LABELS = ["Paso · consentimiento","Paso · previo","Paso · pregunta 1","Paso · pregunta 2","Paso · pregunta 3","Paso · perturbación","Paso · devolución"];
+
+function escapeHtml(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});
+}
+function responses(){ return DATA.filter(function(d){return d.event_type==="ITEM_RESPONSE";}); }
+function revisions(){ return DATA.filter(function(d){return d.event_type==="REVISION_EVENT";}); }
+
+function showTab(id){
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("active",p.id===id);});
+  document.querySelectorAll(".nav button").forEach(function(b){
+    var on=b.getAttribute("data-tab")===id;
+    b.classList.toggle("active",on);
+    b.setAttribute("aria-selected",on?"true":"false");
+  });
+  window.scrollTo(0,0);
+  if(id==="docencia"||id==="perfil"||id==="invest"||id==="traduce") renderDerived();
+}
+document.querySelectorAll(".nav button").forEach(function(b){
+  b.addEventListener("click",function(){showTab(b.getAttribute("data-tab"));});
+});
+document.querySelectorAll("[data-jump]").forEach(function(el){
+  el.addEventListener("click",function(e){e.preventDefault();showTab(el.getAttribute("data-jump"));});
+});
+
+function setStep(n){
+  session.step=n;
+  document.querySelectorAll(".step-panel").forEach(function(p){
+    p.classList.toggle("active",Number(p.getAttribute("data-step"))===n);
+  });
+  document.getElementById("stu-progress").style.width=Math.round((n/6)*100)+"%";
+  document.getElementById("stu-step-label").textContent=STEP_LABELS[n]||"";
+  document.getElementById("stu-status").textContent="Paso "+n+"/6";
+}
+
+document.getElementById("consent-choice").addEventListener("click",function(){
+  session.consent=!session.consent;
+  this.classList.toggle("selected",session.consent);
+  this.setAttribute("aria-pressed",session.consent?"true":"false");
+  this.textContent=(session.consent?"☑":"☐")+" Acepto participar en estas condiciones (demo)";
+  document.getElementById("btn-consent-next").disabled=!session.consent;
+});
+document.getElementById("btn-consent-next").addEventListener("click",function(){if(session.consent)setStep(1);});
+
+document.querySelectorAll(".prior-opt").forEach(function(el){
+  el.addEventListener("click",function(){
+    document.querySelectorAll(".prior-opt").forEach(function(x){x.classList.remove("selected","ok");});
+    el.classList.add("selected");
+    if(el.getAttribute("data-prior")==="c") el.classList.add("ok");
+    session.prior=el.getAttribute("data-prior");
+    document.getElementById("btn-prior-next").disabled=false;
+  });
+});
+document.getElementById("btn-prior-next").addEventListener("click",function(){if(session.prior)setStep(2);});
+
+function wireItem(n, btnId, nextStep){
+  document.querySelectorAll('.item-opt[data-item="'+n+'"]').forEach(function(el){
+    el.addEventListener("click",function(){
+      document.querySelectorAll('.item-opt[data-item="'+n+'"]').forEach(function(x){x.classList.remove("selected","ok");});
+      el.classList.add("selected");
+      var key=el.getAttribute("data-key");
+      if(key===ITEM_MAP["item-"+n].key) el.classList.add("ok");
+      session.items[n].key=key;
+      document.getElementById(btnId).disabled=false;
+    });
+  });
+  document.querySelectorAll('.confidence-row[data-conf="'+n+'"] button').forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll('.confidence-row[data-conf="'+n+'"] button').forEach(function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      session.items[n].conf=Number(b.getAttribute("data-val"));
+    });
+  });
+  document.getElementById(btnId).addEventListener("click",function(){
+    if(session.items[n].key) setStep(nextStep);
+  });
+}
+wireItem(1,"btn-item1-next",3);
+wireItem(2,"btn-item2-next",4);
+wireItem(3,"btn-item3-next",5);
+
+document.querySelectorAll(".rev-opt").forEach(function(el){
+  el.addEventListener("click",function(){
+    document.querySelectorAll(".rev-opt").forEach(function(x){x.classList.remove("selected","ok");});
+    el.classList.add("selected");
+    if(el.getAttribute("data-rev")==="MODIFY") el.classList.add("ok");
+    session.revision=el.getAttribute("data-rev");
+    session.revisionUi=el.getAttribute("data-ui");
+    var enumMap={MODIFY:"ADAPTIVE_CHANGE",MAINTAIN:"RIGID_MAINTENANCE",SUSPEND:"APPROPRIATE_SUSPENSION"};
+    document.getElementById("staff-note").style.display="block";
+    document.getElementById("staff-enum").textContent=enumMap[session.revision]||"—";
+    document.getElementById("btn-rev-next").disabled=false;
+  });
+});
+document.getElementById("btn-rev-next").addEventListener("click",function(){
+  if(!session.revision) return;
+  session.note=document.getElementById("rev-note").value;
+  commitAnaToData();
+  renderFeedback();
+  session.completed=true;
+  setStep(6);
+  renderDerived();
+});
+
+document.querySelectorAll("[data-stu-back]").forEach(function(b){
+  b.addEventListener("click",function(){if(session.step>0)setStep(session.step-1);});
+});
+
+function revisionClassFromAction(a){
+  return ({MODIFY:"ADAPTIVE_CHANGE",MAINTAIN:"RIGID_MAINTENANCE",SUSPEND:"APPROPRIATE_SUSPENSION"})[a]||"UNINTERPRETABLE";
+}
+
+function removeAna(){
+  for(var i=DATA.length-1;i>=0;i--){ if(DATA[i].student_pseudonym_id==="p_0007") DATA.splice(i,1); }
+}
+
+function defaultAnaRows(){
+  return [
+    row({student_pseudonym_id:"p_0007",item_id:"item-1",choice_key:"b",correct:true,confidence:70,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"MC06",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+    row({student_pseudonym_id:"p_0007",item_id:"item-2",choice_key:"b",correct:true,confidence:65,revision_ui:"",revision_class:"",revision_action:"",competency_id:"MC05",content_target_id:"CT-INFO",metacognitive_competency_ids:"META-KB|META-PL|META-CA",metacognitive_evidence_claims:"META-KB:WEAK|META-PL:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+    row({student_pseudonym_id:"p_0007",item_id:"item-3",choice_key:"b",correct:true,confidence:60,revision_ui:"",revision_class:"",revision_action:"",competency_id:"MC08",content_target_id:"CT-ALT",metacognitive_competency_ids:"META-MO|META-CA",metacognitive_evidence_claims:"META-MO:WEAK|META-CA:PAIRED",score_0_4:3,n_obs:1,event_type:"ITEM_RESPONSE"}),
+    row({student_pseudonym_id:"p_0007",item_id:"",choice_key:"",correct:null,confidence:null,revision_ui:"La modifico",revision_class:"ADAPTIVE_CHANGE",revision_action:"MODIFY",competency_id:"",content_target_id:"CT-CAUSAL",metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",score_0_4:null,n_obs:1,note:"simulated_revision",event_type:"REVISION_EVENT"})
+  ];
+}
+
+function commitAnaToData(){
+  removeAna();
+  var anaItems=[];
+  [1,2,3].forEach(function(n){
+    var id="item-"+n, map=ITEM_MAP[id], it=session.items[n];
+    var correct=it.key===map.key;
+    var claims=Object.keys(map.claims).map(function(k){return k+":"+map.claims[k];}).join("|");
+    anaItems.push(row({
+      student_pseudonym_id:"p_0007",item_id:id,choice_key:it.key,correct:correct,confidence:it.conf,
+      revision_ui:n===1?session.revisionUi:"",revision_class:n===1?revisionClassFromAction(session.revision):"",
+      revision_action:n===1?session.revision:"",competency_id:map.legacy,content_target_id:map.ct,
+      metacognitive_competency_ids:map.meta.join("|"),metacognitive_evidence_claims:claims,
+      score_0_4:correct?3:1,n_obs:1,note:"simulated_interactive",event_type:"ITEM_RESPONSE"
+    }));
+  });
+  var rev=row({
+    student_pseudonym_id:"p_0007",item_id:"",choice_key:"",correct:null,confidence:null,
+    revision_ui:session.revisionUi,revision_class:revisionClassFromAction(session.revision),
+    revision_action:session.revision,competency_id:"",content_target_id:"CT-CAUSAL",
+    metacognitive_competency_ids:"META-AD",metacognitive_evidence_claims:"META-AD:PARTIAL",
+    score_0_4:null,n_obs:1,note:"simulated_interactive_revision",event_type:"REVISION_EVENT"
+  });
+  for(var t=anaItems.length-1;t>=0;t--) DATA.unshift(anaItems[t]);
+  // insert revisión after ítem rows: find last p_0007 ítem and splice after
+  var lastIdx=-1;
+  for(var i=0;i<DATA.length;i++){ if(DATA[i].student_pseudonym_id==="p_0007") lastIdx=i; }
+  DATA.splice(lastIdx+1,0,rev);
+}
+
+function restoreDefaultAna(){
+  removeAna();
+  var defs=defaultAnaRows();
+  for(var t=defs.length-1;t>=0;t--) DATA.unshift(defs[t]);
+}
+
+document.getElementById("btn-reset-student").addEventListener("click",function(){
+  session.step=0;session.consent=false;session.prior=null;
+  session.items={1:{key:null,conf:70},2:{key:null,conf:65},3:{key:null,conf:60}};
+  session.revision=null;session.revisionUi=null;session.note="";session.completed=false;
+  var cc=document.getElementById("consent-choice");
+  cc.classList.remove("selected");cc.setAttribute("aria-pressed","false");
+  cc.textContent="☐ Acepto participar en estas condiciones (demo)";
+  document.getElementById("btn-consent-next").disabled=true;
+  document.querySelectorAll(".prior-opt,.item-opt,.rev-opt").forEach(function(x){x.classList.remove("selected","ok");});
+  ["btn-prior-next","btn-item1-next","btn-item2-next","btn-item3-next","btn-rev-next"].forEach(function(id){
+    document.getElementById(id).disabled=true;
+  });
+  document.getElementById("staff-note").style.display="none";
+  restoreDefaultAna();
+  renderDerived();
+  setStep(0);
+});
+
+function renderFeedback(){
+  var i1=session.items[1],i2=session.items[2],i3=session.items[3];
+  document.getElementById("fb-1").textContent="Elegiste opciones "+(i1.key||"—").toUpperCase()+" / "+(i2.key||"—").toUpperCase()+" / "+(i3.key||"—").toUpperCase()+" con confianza ~"+i1.conf+"%, "+i2.conf+"% y "+i3.conf+"%. Ante el dato nuevo: «"+session.revisionUi+"».";
+  document.getElementById("fb-2").textContent=i1.key==="b"
+    ?"Separaste «vino después» de «lo causo». Usaste el dato nuevo para ajustar la idea en vez de aferrarte a la afirmación de la compañera."
+    :"Revisá la diferencia entre secuencia temporal y causa. El dato nuevo (recuperacion sin tratamiento + otras asintomaticas) debilita la afirmación causal.";
+  document.getElementById("fb-3").textContent="Todavia podés explicitar que dato temporal faltaria (cuanto paso entre vacuna y fiebre) y justificar la revisión con ese criterio.";
+  document.getElementById("fb-4").textContent="Respuesta inmune de base y la diferencia entre temporalidad y causalidad — sin cerrar diagnóstico ni tratamiento.";
+  document.getElementById("fb-5").textContent="En el proximo caso, antes de afirmar una causa, anotá que dato te faltaria y que explicaciones alternativas quedan abiertas.";
+  document.getElementById("fb-n").innerHTML="Contador de evidencia (ejemplo): n = 1 observación / un solo caso. <strong>Aún no hay suficientes casos para estimar tendencia</strong> (umbral piloto: n&lt;3).";
+}
+
+function computeMetaProfile(){
+  var ana=DATA.filter(function(d){return d.student_pseudonym_id==="p_0007";});
+  var counts={}, strengths={}, cases=1;
+  Object.keys(META_DICT).forEach(function(k){counts[k]=0;strengths[k]=[];});
+  ana.forEach(function(row){
+    if(!row.metacognitive_competency_ids) return;
+    var ids=row.metacognitive_competency_ids.split("|");
+    var claims={};
+    (row.metacognitive_evidence_claims||"").split("|").forEach(function(p){
+      var sp=p.split(":"); if(sp.length===2) claims[sp[0]]=sp[1];
+    });
+    ids.forEach(function(id){
+      if(!counts.hasOwnProperty(id)) return;
+      counts[id]++;
+      if(claims[id]) strengths[id].push(claims[id]);
+    });
+  });
+  var profile={};
+  Object.keys(META_DICT).forEach(function(id){
+    var n=counts[id], state="NOT_OBSERVED";
+    if(n>0){
+      if(cases>=2 && n>=3) state="REPEATED_EVIDENCE";
+      else state="INITIAL_EVIDENCE";
+    }
+    profile[id]={n:n,state:state,strengths:strengths[id],cases:cases};
+  });
+  return profile;
+}
+
+function renderDocencia(){
+  var resp=responses();
+  var students={}; resp.forEach(function(r){students[r.student_pseudonym_id]=1;});
+  var nStu=Object.keys(students).length, nObs=resp.length;
+  var nOk=resp.filter(function(r){return r.correct;}).length;
+  var nRisk=resp.filter(function(r){return !r.correct && r.confidence>=70;}).length;
+  document.getElementById("m-students").textContent=nStu;
+  document.getElementById("m-observations").textContent=nObs;
+  document.getElementById("m-accuracy").textContent=(nObs?Math.round(100*nOk/nObs):0)+"%";
+  document.getElementById("m-risk").textContent=nRisk;
+
+  var byComp={};
+  Object.keys(DIMENSIONS).forEach(function(c){byComp[c]={n:0,correct:0,confSum:0,highErrors:0};});
+  resp.forEach(function(r){
+    var c=r.competency_id; if(!byComp[c]) return;
+    byComp[c].n++; if(r.correct) byComp[c].correct++;
+    byComp[c].confSum+=r.confidence;
+    if(!r.correct && r.confidence>=70) byComp[c].highErrors++;
+  });
+  var summaries=Object.keys(byComp).map(function(code){
+    var s=byComp[code];
+    return {code:code,n:s.n,correct:s.correct,accuracy:s.n?Math.round(100*s.correct/s.n)+"%":"—",
+      confidence:s.n?Math.round(s.confSum/s.n):0,highErrors:s.highErrors};
+  }).sort(function(a,b){return b.highErrors-a.highErrors || a.n-b.n;});
+
+  var priority=summaries[0];
+  document.getElementById("priority-title").textContent="Reforzar: "+DIMENSIONS[priority.code].name;
+  document.getElementById("priority-copy").textContent=
+    priority.highErrors+" de "+priority.n+" respuestas presentan error con confianza alta en "+priority.code+
+    " ("+DIMENSIONS[priority.code].content+"). La señal prioriza una actividad de contraste; todavía no describe una dificultad estable ni atribuye causa. Ejemplo simulado.";
+
+  var tbody=document.getElementById("teacher-DIMENSIONS");
+  tbody.innerHTML=summaries.map(function(s){
+    var statusClass=s.highErrors?"priority":(Number(s.accuracy.replace("%",""))<75?"reinforce":"consolidate");
+    var statusLabel=s.highErrors?"Prioritaria":(Number(s.accuracy.replace("%",""))<75?"Reforzar":"Consolidar");
+    var interpretation=s.highErrors
+      ?"Hay al menos un error con confianza ≥70% en este ejemplo. Revisar justificación antes de generalizar."
+      :"Sin error de alta confianza en el corte. Seguir contrastando con más casos.";
+    return '<tr data-priority="'+(s.highErrors?"true":"false")+'"><td><strong>'+escapeHtml(DIMENSIONS[s.code].name)+'</strong><br><span class="mono">'+DIMENSIONS[s.code].content+' · legado '+s.code+'</span><br><span class="meta">META candidata: '+DIMENSIONS[s.code].meta.join(" · ")+'</span></td><td>'+s.correct+"/"+s.n+" aciertos · conf. media "+s.confidence+"%<br><strong>"+s.highErrors+"</strong> error(es) con confianza alta</td><td><span class=\"status "+statusClass+"\">"+statusLabel+"</span><div class=\"meta\" style=\"margin-top:6px\">"+interpretation+"</div></td><td>"+escapeHtml(DIMENSIONS[s.code].action)+"</td></tr>";
+  }).join("");
+
+  var ah=0,al=0,eh=0,el=0;
+  resp.forEach(function(r){
+    var hi=r.confidence>=70;
+    if(r.correct){ if(hi) ah++; else al++; } else { if(hi) eh++; else el++; }
+  });
+  document.getElementById("cal-ah").textContent=ah;
+  document.getElementById("cal-al").textContent=al;
+  document.getElementById("cal-eh").textContent=eh;
+  document.getElementById("cal-el").textContent=el;
+
+  var revCounts={};
+  revisions().forEach(function(r){
+    var k=r.revision_class||"UNKNOWN";
+    revCounts[k]=(revCounts[k]||0)+1;
+  });
+  document.getElementById("revisión-summary").innerHTML=Object.keys(revCounts).map(function(k){
+    return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><span style="width:160px;font-size:.85rem">'+(REV_LABELS[k]||k)+'</span><div style="flex:1;height:10px;background:#e7ecee;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.min(100,revCounts[k]*20)+'%;background:var(--teal)"></span></div><strong style="width:28px;text-align:right">'+revCounts[k]+'</strong></div>';
+  }).join("")||'<p class="meta">Sin revisiónes en DATA.</p>';
+}
+
+document.querySelectorAll("[data-dimensión-filter]").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll("[data-dimensión-filter]").forEach(function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    var f=btn.getAttribute("data-dimensión-filter");
+    document.querySelectorAll("#teacher-DIMENSIONS tr").forEach(function(row){
+      row.hidden=f==="priority"&&row.getAttribute("data-priority")!=="true";
+    });
+  });
+});
+
+function renderPerfil(){
+  var profile=computeMetaProfile();
+  var observed=0, notobs=0;
+  var nextNeeded={
+    "META-KB":"Probe de justificación / brecha de información.",
+    "META-PL":"Pregunta explicita de plan antes de responder.",
+    "META-MO":"Probe de monitoreo o justificación completa.",
+    "META-CA":"Mas pares respuesta–confianza en ≥2 casos comparables.",
+    "META-ST":"Pregunta de selección de estrategia (no medida en v0.1).",
+    "META-AD":"Respuesta + confianza posteriores a la perturbación + justificación.",
+    "META-EV":"Autoevalúación + próxima acción + caso de transferencia."
+  };
+  document.getElementById("meta-coverage").innerHTML=Object.keys(META_DICT).map(function(id){
+    var p=profile[id];
+    if(p.state==="NOT_OBSERVED") notobs++; else observed++;
+    var stClass=p.state==="NOT_OBSERVED"?"notobs":"observed";
+    var strengthTxt=p.strengths.length?p.strengths.join(", "):"—";
+    return '<div class="cov-card"><h4><span class="mono">'+id+'</span> · '+escapeHtml(META_DICT[id].short)+'</h4><p class="meta" style="margin:0 0 8px">'+escapeHtml(META_DICT[id].name)+'</p><p><span class="status '+stClass+'">'+p.state+'</span></p><p style="margin:8px 0 0;font-size:.88rem">Eventos: <strong>'+p.n+'</strong> · casos: <strong>'+p.cases+'</strong><br>Fuerza(s): <span class="mono">'+escapeHtml(strengthTxt)+'</span></p><p class="meta" style="margin:8px 0 0">Próxima evidencia: '+escapeHtml(nextNeeded[id])+'</p></div>';
+  }).join("");
+  document.getElementById("p-observed").textContent=observed;
+  document.getElementById("p-notobs").textContent=notobs;
+
+  document.getElementById("meta-hypotheses").innerHTML=Object.keys(META_DICT).map(function(id){
+    var p=profile[id];
+    if(p.state==="NOT_OBSERVED"){
+      return '<tr><td><span class="mono">'+id+'</span> '+escapeHtml(META_DICT[id].short)+'</td><td><span class="status notobs">NOT_OBSERVED</span></td><td class="meta">Sin hipótesis ni estrategia: el instrumento no produjo evidencia interpretable.</td></tr>';
+    }
+    var hypo="";
+    if(id==="META-CA") hypo="Hipótesis exploratoria: los pares respuesta–confianza de un solo caso sugieren calibración inicial; hace falta repeticion en otro caso comparable.";
+    else if(id==="META-AD") hypo="Estrategia: capturar post-respuesta y justificación tras la perturbación para pasar de PARTIAL a evidencia más sólida.";
+    else if(id==="META-KB"||id==="META-PL"||id==="META-MO") hypo="Evidencia WEAK por falta de probe/justificación. Estrategia: agregar probes explicitos en la próxima versión del item.";
+    else hypo="Mantener registro; no inferir dominio.";
+    return '<tr><td><span class="mono">'+id+'</span> '+escapeHtml(META_DICT[id].short)+'</td><td><span class="status observed">'+p.state+'</span></td><td>'+escapeHtml(hypo)+'</td></tr>';
+  }).join("");
+}
+
+function renderResearch(){
+  var rows=DATA.slice();
+  var students={}, cts={}, metas={};
+  rows.forEach(function(r){
+    students[r.student_pseudonym_id]=1;
+    if(r.content_target_id) cts[r.content_target_id]=1;
+    (r.metacognitive_competency_ids||"").split("|").forEach(function(m){if(m) metas[m]=1;});
+  });
+  document.getElementById("r-rows").textContent=rows.length;
+  document.getElementById("r-students").textContent=Object.keys(students).length;
+  document.getElementById("r-ct").textContent=Object.keys(cts).length;
+  document.getElementById("r-meta").textContent=Object.keys(metas).length;
+
+  document.getElementById("research-body").innerHTML=rows.map(function(r){
+    var hl=r.student_pseudonym_id==="p_0007"?' class="hl"':"";
+    var item=r.event_type==="REVISION_EVENT"?"REVISION":r.item_id;
+    var corr=r.correct===null||r.correct===undefined?"":String(r.correct);
+    var conf=r.confidence===null||r.confidence===undefined?"":r.confidence;
+    return "<tr"+hl+"><td>true</td><td>"+escapeHtml(r.student_pseudonym_id)+"</td><td>"+escapeHtml(item)+"</td><td>"+escapeHtml(r.content_target_id||"")+"</td><td><span class=\"mono\">"+escapeHtml(r.metacognitive_competency_ids||"")+"</span><br><span class=\"meta\">"+escapeHtml(r.metacognitive_evidence_claims||"")+"</span></td><td>"+escapeHtml(r.choice_key||"")+"</td><td>"+corr+"</td><td>"+conf+"</td><td>"+escapeHtml(r.revision_class||r.revision_ui||"")+"</td><td>"+escapeHtml(r.note||"")+"</td></tr>";
+  }).join("");
+}
+
+function renderLiveBridge(){
+  var ana=DATA.filter(function(d){return d.student_pseudonym_id==="p_0007";});
+  document.getElementById("live-bridge").innerHTML=ana.map(function(r){
+    var gesto=r.event_type==="REVISION_EVENT"
+      ?("Postura: «"+(r.revision_ui||"")+"»")
+      :("Ítem "+r.item_id+" · opción "+(r.choice_key||"").toUpperCase()+" · conf "+r.confidence+"%");
+    return "<tr"+(r.event_type==="REVISION_EVENT"?' class="hl"':"")+"><td>"+escapeHtml(gesto)+"</td><td><span class=\"mono\">"+r.event_type+"</span></td><td>"+escapeHtml(r.content_target_id||"")+"</td><td><span class=\"mono\">"+escapeHtml(r.metacognitive_evidence_claims||"")+"</span></td></tr>";
+  }).join("");
+}
+
+function renderDerived(){
+  renderDocencia();
+  renderPerfil();
+  renderResearch();
+  renderLiveBridge();
+}
+
+document.getElementById("btn-csv").addEventListener("click",function(){
+  var cols=["example","student_pseudonym_id","session_code","case_family","year_band","event_type","item_id","choice_key","correct","confidence","revision_ui","revision_class","content_target_id","metacognitive_competency_ids","metacognitive_evidence_claims","competency_id","score_0_4","n_obs","note"];
+  function esc(v){
+    if(v===null||v===undefined) return "";
+    var s=String(v);
+    if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+    return s;
+  }
+  var lines=[cols.join(",")];
+  DATA.forEach(function(r){ lines.push(cols.map(function(c){return esc(r[c]);}).join(",")); });
+  var blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="metacog-rhus-simulación-export-example.csv";
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href); a.remove();},500);
+});
+
+document.getElementById("btn-print").addEventListener("click",function(){window.print();});
+
+renderDerived();
+setStep(0);
+})();
+</script>
+</body>
+</html>
